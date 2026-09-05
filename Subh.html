@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sharma Restaurant | Jaipur</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:Arial,sans-serif;color:#222;background:#f8f8f8}
+nav{background:#111;color:#fff;padding:15px 5%;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:1000}
+nav h2{color:#ffb300}
+nav a{color:white;text-decoration:none;margin:0 7px}
+button,.btn{cursor:pointer;border:0;border-radius:6px;padding:12px 18px}
+#customizeBtn{display:none;background:#ffb300}
+#logoutBtn{display:none;background:#e53935;color:white}
+section{padding:70px 7%}
+.hero{min-height:80vh;display:flex;align-items:center;justify-content:center;text-align:center;color:white;background-size:cover;background-position:center;background-image:linear-gradient(#0008,#0008),url("https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1400&q=80")}
+.hero h1{font-size:50px;margin-bottom:15px}
+.hero p{font-size:20px;margin-bottom:25px}
+.btn{display:inline-block;background:#ff9800;color:white;text-decoration:none}
+.about,.gallery{background:white;text-align:center}
+.about p{max-width:800px;margin:20px auto;line-height:1.7}
+.menu{text-align:center}
+.menu-container,.gallery-container{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:25px;margin-top:30px}
+.food-card{background:white;border-radius:10px;overflow:hidden;box-shadow:0 4px 15px #0002}
+.food-card img{width:100%;height:200px;object-fit:cover}
+.food-card div{padding:18px}
+.price{color:#e65100;font-weight:bold;font-size:20px}
+.why{background:#222;color:white;text-align:center}
+.why-container{display:flex;justify-content:center;gap:25px;flex-wrap:wrap;margin-top:30px}
+.why-box{background:#333;padding:25px;width:220px;border-radius:8px}
+.gallery img{width:100%;height:220px;object-fit:cover;border-radius:8px}
+.contact{text-align:center}
+.contact p{margin:12px 0}
+footer{background:#111;color:white;text-align:center;padding:20px}
+
+/* LOGIN */
+#loginOverlay{
+position:fixed;inset:0;background:#000b;display:flex;
+justify-content:center;align-items:center;z-index:9999
+}
+.login-box{
+background:white;width:90%;max-width:400px;padding:30px;
+border-radius:12px
+}
+.login-box h2{text-align:center;margin-bottom:20px}
+.login-box input{
+width:100%;padding:13px;margin:8px 0;
+border:1px solid #ccc;border-radius:6px
+}
+.login-box button{
+width:100%;margin-top:10px;background:#111;color:white
+}
+#loginMessage{text-align:center;margin-top:15px;min-height:20px}
+
+/* CUSTOMIZE */
+#customizePanel{
+display:none;position:fixed;inset:0;background:#000b;
+z-index:9998;overflow:auto;padding:30px 15px
+}
+.customize-box{
+max-width:700px;background:white;margin:auto;padding:25px;
+border-radius:12px
+}
+.form-group{margin-bottom:15px}
+.form-group label{display:block;font-weight:bold;margin-bottom:5px}
+.form-group input,.form-group textarea{
+width:100%;padding:11px;border:1px solid #ccc;border-radius:6px
+}
+.form-group textarea{min-height:100px}
+.actions{display:flex;gap:10px;margin-top:20px}
+.save{background:#2e7d32;color:white;flex:1}
+.close{background:#777;color:white;flex:1}
+
+@media(max-width:700px){
+nav{flex-direction:column;gap:12px}
+.hero h1{font-size:35px}
+}
+</style>
+</head>
+
+<body>
+
+<nav>
+<h2 id="logoName">Sharma Restaurant</h2>
+
+<div>
+<a href="#home">Home</a>
+<a href="#about">About</a>
+<a href="#menu">Menu</a>
+<a href="#gallery">Gallery</a>
+<a href="#contact">Contact</a>
+</div>
+
+<div>
+<button id="customizeBtn" onclick="openCustomize()">Customize</button>
+<button id="logoutBtn" onclick="logoutUser()">Logout</button>
+</div>
+</nav>
+
+<section class="hero" id="home">
+<div>
+<h1 id="heroName">Sharma Restaurant</h1>
+<p>Authentic Indian Taste</p>
+<a id="heroWhatsApp" class="btn" target="_blank">Order on WhatsApp</a>
+</div>
+</section>
+
+<section class="about" id="about">
+<h2>About Us</h2>
+<p id="aboutText">
+Welcome to Sharma Restaurant. We serve delicious and fresh Indian food prepared with quality ingredients and authentic flavours.
+</p>
+</section>
+
+<section class="menu" id="menu">
+<h2>Our Menu</h2>
+
+<div class="menu-container">
+
+<div class="food-card">
+<img id="food1Image" src="https://images.unsplash.com/photo-1631452180519-c014fe946bc7?auto=format&fit=crop&w=800&q=80">
+<div>
+<h3 id="food1Name">Paneer Special</h3>
+<p>Delicious Indian paneer preparation.</p>
+<p class="price" id="food1Price">₹249</p>
+</div>
+</div>
+
+<div class="food-card">
+<img id="food2Image" src="https://images.unsplash.com/photo-1579751626657-72bc17010498?auto=format&fit=crop&w=800&q=80">
+<div>
+<h3 id="food2Name">Cheese Pizza</h3>
+<p>Fresh pizza with delicious cheese.</p>
+<p class="price" id="food2Price">₹199</p>
+</div>
+</div>
+
+<div class="food-card">
+<img id="food3Image" src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=800&q=80">
+<div>
+<h3 id="food3Name">Classic Burger</h3>
+<p>Fresh and tasty classic burger.</p>
+<p class="price" id="food3Price">₹149</p>
+</div>
+</div>
+
+</div>
+</section>
+
+<section class="why">
+<h2>Why Choose Us?</h2>
+<div class="why-container">
+<div class="why-box"><h3>Fresh Food</h3><p>Fresh ingredients every day.</p></div>
+<div class="why-box"><h3>Best Taste</h3><p>Authentic delicious flavours.</p></div>
+<div class="why-box"><h3>Affordable</h3><p>Great food at reasonable prices.</p></div>
+</div>
+</section>
+
+<section class="gallery" id="gallery">
+<h2>Gallery</h2>
+<div class="gallery-container">
+<img src="https://images.unsplash.com/photo-1515003197210-e0cd71810b5f?auto=format&fit=crop&w=800&q=80">
+<img src="https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=800&q=80">
+<img src="https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=800&q=80">
+<img src="https://images.unsplash.com/photo-1552566626-52f8b828add9?auto=format&fit=crop&w=800&q=80">
+</div>
+</section>
+
+<section class="contact" id="contact">
+<h2>Contact Us</h2>
+<p>📍 <span id="location">Jaipur, Rajasthan</span></p>
+<p>📞 <span id="phone">+91 9876543210</span></p>
+<p>🕒 <span id="timing">10:00 AM - 10:00 PM</span></p>
+<br>
+<a id="contactWhatsApp" class="btn" target="_blank">WhatsApp Us</a>
+<a id="mapLink" class="btn" target="_blank">Google Maps</a>
+</section>
+
+<footer>
+© <span id="year"></span> <span id="footerName">Sharma Restaurant</span>
+</footer>
+
+
+<!-- LOGIN -->
+
+<div id="loginOverlay">
+
+<div class="login-box">
+
+<h2>Restaurant Login</h2>
+
+<form id="loginForm" onsubmit="loginUser(event)">
+
+<input
+id="email"
+type="email"
+placeholder="Email"
+required
+>
+
+<input
+id="password"
+type="password"
+placeholder="Password"
+required
+>
+
+<button id="loginButton" type="submit">
+Login
+</button>
+
+</form>
+
+<div id="loginMessage"></div>
+
+</div>
+</div>
+
+
+<!-- CUSTOMIZE -->
+
+<div id="customizePanel">
+
+<div class="customize-box">
+
+<h2>Customize Restaurant</h2>
+
+<div class="form-group">
+<label>Restaurant Name</label>
+<input id="nameInput">
+</div>
+
+<div class="form-group">
+<label>Phone</label>
+<input id="phoneInput">
+</div>
+
+<div class="form-group">
+<label>Location</label>
+<input id="locationInput">
+</div>
+
+<div class="form-group">
+<label>Opening Time</label>
+<input id="openingInput">
+</div>
+
+<div class="form-group">
+<label>Closing Time</label>
+<input id="closingInput">
+</div>
+
+<div class="form-group">
+<label>About</label>
+<textarea id="aboutInput"></textarea>
+</div>
+
+<div class="form-group">
+<label>Hero Image URL</label>
+<input id="heroInput">
+</div>
+
+<hr><br>
+
+<h3>Food 1</h3>
+
+<div class="form-group">
+<label>Name</label>
+<input id="f1name">
+</div>
+
+<div class="form-group">
+<label>Price</label>
+<input id="f1price">
+</div>
+
+<div class="form-group">
+<label>Image URL</label>
+<input id="f1image">
+</div>
+
+<h3>Food 2</h3>
+
+<div class="form-group">
+<label>Name</label>
+<input id="f2name">
+</div>
+
+<div class="form-group">
+<label>Price</label>
+<input id="f2price">
+</div>
+
+<div class="form-group">
+<label>Image URL</label>
+<input id="f2image">
+</div>
+
+<h3>Food 3</h3>
+
+<div class="form-group">
+<label>Name</label>
+<input id="f3name">
+</div>
+
+<div class="form-group">
+<label>Price</label>
+<input id="f3price">
+</div>
+
+<div class="form-group">
+<label>Image URL</label>
+<input id="f3image">
+</div>
+
+<p id="saveMessage"></p>
+
+<div class="actions">
+<button class="save" onclick="saveChanges()">Save Changes</button>
+<button class="close" onclick="closeCustomize()">Close</button>
+</div>
+
+</div>
+</div>
+
+
+<script>
+
+/* ==============================
+   SUPABASE
+============================== */
+
+const SUPABASE_URL =
+"https://eggnybmwnwsidichefpn.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_9LUhftQsLVc7YwKzmokRuw_Qv1tsJcY";
+
+let db;
+
+
+/* ==============================
+   START
+============================== */
+
+window.addEventListener("DOMContentLoaded", async function(){
+
+document.getElementById("year").textContent =
+new Date().getFullYear();
+
+if(!window.supabase){
+
+showMessage("Supabase load nahi hua. Internet check karo.",true);
+return;
+}
+
+db = window.supabase.createClient(
+SUPABASE_URL,
+SUPABASE_KEY
+);
+
+await checkSession();
+
+});
+
+
+/* ==============================
+   SESSION
+============================== */
+
+async function checkSession(){
+
+try{
+
+const result = await db.auth.getSession();
+
+if(result.error){
+
+showMessage(result.error.message,true);
+return;
+}
+
+if(result.data.session){
+
+loginSuccess(result.data.session);
+
+}else{
+
+document.getElementById("loginOverlay").style.display="flex";
+
+}
+
+}catch(error){
+
+showMessage(error.message,true);
+
+}
+
+}
+
+
+/* ==============================
+   LOGIN
+============================== */
+
+async function loginUser(event){
+
+/* VERY IMPORTANT:
+   PAGE REFRESH STOP */
+if(event){
+event.preventDefault();
+}
+
+const email =
+document.getElementById("email").value.trim();
+
+const password =
+document.getElementById("password").value;
+
+const button =
+document.getElementById("loginButton");
+
+const message =
+document.getElementById("loginMessage");
+
+if(!email || !password){
+
+showMessage("Email aur password bharo.",true);
+return;
+}
+
+button.disabled=true;
+button.textContent="Logging in...";
+
+message.style.color="black";
+message.textContent="Login ho raha hai...";
+
+try{
+
+const result =
+await db.auth.signInWithPassword({
+
+email:email,
+password:password
+
+});
+
+if(result.error){
+
+showMessage(
+"Login failed: " + result.error.message,
+true
+);
+
+return;
+}
+
+if(result.data.session){
+
+showMessage("Login successful ✅",false);
+
+setTimeout(function(){
+
+loginSuccess(result.data.session);
+
+},500);
+
+}
+
+}catch(error){
+
+showMessage(
+"Error: " + error.message,
+true
+);
+
+}finally{
+
+button.disabled=false;
+button.textContent="Login";
+
+}
+
+}
+
+
+/* ==============================
+   LOGIN SUCCESS
+============================== */
+
+async function loginSuccess(session){
+
+document.getElementById("loginOverlay")
+.style.display="none";
+
+document.getElementById("customizeBtn")
+.style.display="inline-block";
+
+document.getElementById("logoutBtn")
+.style.display="inline-block";
+
+await loadSettings(session.user.id);
+
+}
+
+
+/* ==============================
+   ERROR MESSAGE
+============================== */
+
+function showMessage(text,error){
+
+const message =
+document.getElementById("loginMessage");
+
+message.textContent=text;
+
+message.style.color =
+error ? "red" : "green";
+
+}
+
+
+/* ==============================
+   LOAD SETTINGS
+============================== */
+
+async function loadSettings(userId){
+
+const result =
+await db
+.from("restaurant_settings")
+.select("*")
+.eq("user_id",userId)
+.maybeSingle();
+
+if(result.error){
+
+console.log(result.error);
+
+setDefaults();
+
+return;
+}
+
+if(result.data){
+
+applySettings(result.data);
+
+fillForm(result.data);
+
+}else{
+
+setDefaults();
+
+}
+
+}
+
+
+/* ==============================
+   DEFAULTS
+============================== */
+
+function setDefaults(){
+
+const data={
+
+restaurant_name:"Sharma Restaurant",
+
+phone:"+91 9876543210",
+
+location:"Jaipur, Rajasthan",
+
+opening_time:"10:00 AM",
+
+closing_time:"10:00 PM",
+
+about:"Welcome to Sharma Restaurant. We serve delicious and fresh Indian food prepared with quality ingredients and authentic flavours.",
+
+hero_image:"https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1400&q=80",
+
+food1_name:"Paneer Special",
+food1_price:"₹249",
+food1_image:"https://images.unsplash.com/photo-1631452180519-c014fe946bc7?auto=format&fit=crop&w=800&q=80",
+
+food2_name:"Cheese Pizza",
+food2_price:"₹199",
+food2_image:"https://images.unsplash.com/photo-1579751626657-72bc17010498?auto=format&fit=crop&w=800&q=80",
+
+food3_name:"Classic Burger",
+food3_price:"₹149",
+food3_image:"https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=800&q=80"
+
+};
+
+applySettings(data);
+fillForm(data);
+
+}
+
+
+/* ==============================
+   APPLY SETTINGS
+============================== */
+
+function applySettings(data){
+
+const name =
+data.restaurant_name || "Sharma Restaurant";
+
+const phone =
+data.phone || "+91 9876543210";
+
+const location =
+data.location || "Jaipur, Rajasthan";
+
+const opening =
+data.opening_time || "10:00 AM";
+
+const closing =
+data.closing_time || "10:00 PM";
+
+document.getElementById("logoName").textContent=name;
+document.getElementById("heroName").textContent=name;
+document.getElementById("footerName").textContent=name;
+
+document.getElementById("aboutText").textContent =
+data.about || "";
+
+document.getElementById("location").textContent=location;
+document.getElementById("phone").textContent=phone;
+
+document.getElementById("timing").textContent =
+opening+" - "+closing;
+
+document.getElementById("food1Name").textContent =
+data.food1_name || "Paneer Special";
+
+document.getElementById("food1Price").textContent =
+data.food1_price || "₹249";
+
+document.getElementById("food1Image").src =
+data.food1_image || document.getElementById("food1Image").src;
+
+document.getElementById("food2Name").textContent =
+data.food2_name || "Cheese Pizza";
+
+document.getElementById("food2Price").textContent =
+data.food2_price || "₹199";
+
+document.getElementById("food2Image").src =
+data.food2_image || document.getElementById("food2Image").src;
+
+document.getElementById("food3Name").textContent =
+data.food3_name || "Classic Burger";
+
+document.getElementById("food3Price").textContent =
+data.food3_price || "₹149";
+
+document.getElementById("food3Image").src =
+data.food3_image || document.getElementById("food3Image").src;
+
+if(data.hero_image){
+
+document.querySelector(".hero").style.backgroundImage =
+'linear-gradient(#0008,#0008),url("'+data.hero_image+'")';
+
+}
+
+let digits =
+phone.replace(/\D/g,"");
+
+if(digits.startsWith("91")){
+digits=digits.substring(2);
+}
+
+digits=digits.slice(-10);
+
+const wa =
+"https://wa.me/91"+digits+
+"?text="+
+encodeURIComponent("Hello, I want to order from "+name);
+
+document.getElementById("heroWhatsApp").href=wa;
+document.getElementById("contactWhatsApp").href=wa;
+
+document.getElementById("mapLink").href =
+"https://www.google.com/maps/search/?api=1&query="+
+encodeURIComponent(location);
+
+document.title=name+" | Jaipur";
+
+}
+
+
+/* ==============================
+   FORM
+============================== */
+
+function fillForm(data){
+
+document.getElementById("nameInput").value=data.restaurant_name||"";
+document.getElementById("phoneInput").value=data.phone||"";
+document.getElementById("locationInput").value=data.location||"";
+document.getElementById("openingInput").value=data.opening_time||"";
+document.getElementById("closingInput").value=data.closing_time||"";
+document.getElementById("aboutInput").value=data.about||"";
+document.getElementById("heroInput").value=data.hero_image||"";
+
+document.getElementById("f1name").value=data.food1_name||"";
+document.getElementById("f1price").value=data.food1_price||"";
+document.getElementById("f1image").value=data.food1_image||"";
+
+document.getElementById("f2name").value=data.food2_name||"";
+document.getElementById("f2price").value=data.food2_price||"";
+document.getElementById("f2image").value=data.food2_image||"";
+
+document.getElementById("f3name").value=data.food3_name||"";
+document.getElementById("f3price").value=data.food3_price||"";
+document.getElementById("f3image").value=data.food3_image||"";
+
+}
+
+
+/* ==============================
+   CUSTOMIZE
+============================== */
+
+function openCustomize(){
+
+document.getElementById("customizePanel")
+.style.display="block";
+
+}
+
+function closeCustomize(){
+
+document.getElementById("customizePanel")
+.style.display="none";
+
+}
+
+
+/* ==============================
+   SAVE
+============================== */
+
+async function saveChanges(){
+
+const sessionResult =
+await db.auth.getSession();
+
+if(!sessionResult.data.session){
+
+alert("Login karo pehle.");
+return;
+}
+
+const user =
+sessionResult.data.session.user;
+
+const payload={
+
+user_id:user.id,
+
+restaurant_name:
+document.getElementById("nameInput").value.trim(),
+
+phone:
+document.getElementById("phoneInput").value.trim(),
+
+location:
+document.getElementById("locationInput").value.trim(),
+
+opening_time:
+document.getElementById("openingInput").value.trim(),
+
+closing_time:
+document.getElementById("closingInput").value.trim(),
+
+about:
+document.getElementById("aboutInput").value.trim(),
+
+hero_image:
+document.getElementById("heroInput").value.trim(),
+
+food1_name:
+document.getElementById("f1name").value.trim(),
+
+food1_price:
+document.getElementById("f1price").value.trim(),
+
+food1_image:
+document.getElementById("f1image").value.trim(),
+
+food2_name:
+document.getElementById("f2name").value.trim(),
+
+food2_price:
+document.getElementById("f2price").value.trim(),
+
+food2_image:
+document.getElementById("f2image").value.trim(),
+
+food3_name:
+document.getElementById("f3name").value.trim(),
+
+food3_price:
+document.getElementById("f3price").value.trim(),
+
+food3_image:
+document.getElementById("f3image").value.trim()
+
+};
+
+const msg =
+document.getElementById("saveMessage");
+
+msg.textContent="Saving...";
+
+try{
+
+const existing =
+await db
+.from("restaurant_settings")
+.select("id")
+.eq("user_id",user.id)
+.maybeSingle();
+
+if(existing.error){
+
+throw existing.error;
+
+}
+
+let result;
+
+if(existing.data){
+
+result =
+await db
+.from("restaurant_settings")
+.update(payload)
+.eq("id",existing.data.id);
+
+}else{
+
+result =
+await db
+.from("restaurant_settings")
+.insert(payload);
+
+}
+
+if(result.error){
+
+throw result.error;
+
+}
+
+applySettings(payload);
+
+msg.style.color="green";
+msg.textContent="Saved successfully ✅";
+
+setTimeout(closeCustomize,1000);
+
+}catch(error){
+
+console.error(error);
+
+msg.style.color="red";
+msg.textContent="Save error: "+error.message;
+
+}
+
+}
+
+
+/* ==============================
+   LOGOUT
+============================== */
+
+async function logoutUser(){
+
+const result =
+await db.auth.signOut();
+
+if(result.error){
+
+alert(result.error.message);
+return;
+
+}
+
+document.getElementById("customizeBtn")
+.style.display="none";
+
+document.getElementById("logoutBtn")
+.style.display="none";
+
+document.getElementById("loginOverlay")
+.style.display="flex";
+
+document.getElementById("password").value="";
+
+}
+
+</script>
+
+</body>
+</html>
